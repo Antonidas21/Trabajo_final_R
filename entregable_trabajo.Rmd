@@ -278,7 +278,6 @@ En el siguiente gráfico se muestra en un diagrama de barras las palabras más e
 
 ```{r fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
 #Facet palabras más repetidas por diario
-fito <- list(colores_azules(9))
 ggplot(bloques, aes(x = reorder_within(palabra, -n, periodico), y = n)) +
   geom_bar(stat ="identity", aes(fill = periodico, alpha = n) , size = 5) +
   scale_x_reordered() +
@@ -322,6 +321,8 @@ Como podemos observar, muchas de las palabras que más se repiten coinciden en l
 Una vez vistas las palabras más recurrentes, es también interesante realizar un análisis de bigramas. Nuevamente se han filtrado las palabras de las noticias quitando aquellos recursos gramaticales repetitivos y aquellos bigramas que aparecen una sola vez. Como los textos no son muy largos, son pocos los bigramas que cumplen estas condiciones, por lo que se ha decidido mostrar todos:
 
 ```{r fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
+
+#Facet bigramas más repetidos por diario
 ggplot(bigram_counts, aes(x = reorder_within(bigram, -n, line), y = n)) +
   geom_bar(stat ="identity", aes(fill = line, alpha = n)) +
   scale_x_reordered() +
@@ -368,11 +369,6 @@ Una forma muy visual de ver la frecuencia con la que aparecen todas las palabras
 ### El Mundo
 ```{r my_wordclouds, fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
 
-#webshot::install_phantomjs()
-
-#Generamos una paleta de colores específica para el número de palabras a representar
-colores_azules <- colorRampPalette(brewer.pal(9,"Blues"))
-
 hw = wordcloud2(bloques_count_mundo[,2:3],color=rev(colores_azules(nrow(bloques_count_mundo))))       
 saveWidget(hw,"1.html",selfcontained = F)
 webshot::webshot("1.html","1.png",vwidth = 1800, vheight = 900, delay =10)
@@ -381,7 +377,6 @@ webshot::webshot("1.html","1.png",vwidth = 1800, vheight = 900, delay =10)
 
 ### El País
 ```{r my_wordclouds2, fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
-colores_rojos <- colorRampPalette(brewer.pal(9,"Reds"))
 
 hw2 = wordcloud2(bloques_count_pais[,2:3],color=rev(colores_rojos(nrow(bloques_count_pais))))
 saveWidget(hw2,"1.html",selfcontained = F)
@@ -391,20 +386,18 @@ webshot::webshot("1.html","1.png",vwidth = 1800, vheight = 900, delay =10)
 
 ### El Periódico
 ```{r my_wordclouds4, fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
-colores_narojo <- colorRampPalette(brewer.pal(9,"Oranges"))
 
-hw4 = wordcloud2(bloques_count_periodico[,2:3], color = rev(colores_narojo(nrow(bloques_count_periodico))))
-saveWidget(hw4,"1.html",selfcontained = F)
+hw3 = wordcloud2(bloques_count_periodico[,2:3], color = rev(colores_naranjas(nrow(bloques_count_periodico))))
+saveWidget(hw3,"1.html",selfcontained = F)
 webshot::webshot("1.html","1.png",vwidth = 1800, vheight = 900, delay =10)
 
 ```
 
 ### Ok Diario
 ```{r my_wordclouds3, fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
-colores_verzul <- colorRampPalette(brewer.pal(9,"Greens"))
 
-hw3 = wordcloud2(bloques_count_okdiario[,2:3], color = rev(colores_verzul(nrow(bloques_count_okdiario))))
-saveWidget(hw3,"1.html",selfcontained = F)
+hw4 = wordcloud2(bloques_count_okdiario[,2:3], color = rev(colores_verdes(nrow(bloques_count_okdiario))))
+saveWidget(hw4,"1.html",selfcontained = F)
 webshot::webshot("1.html","1.png",vwidth = 1800, vheight = 900, delay =10)
 
 ```
