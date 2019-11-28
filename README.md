@@ -23,7 +23,8 @@ packages <- c("rmdformats",
 "stopwords",
 "htmlwidgets",
 "kableExtra",
-"RColorBrewer")
+"RColorBrewer",
+"webshot")
 
 install.packages(packages)
 
