@@ -1,0 +1,546 @@
+---
+title: "Trabajo final Business Performance Analysis"
+author: "Antonio Álvarez Bao"
+date: "2019-11-28"
+output: 
+  rmdformats::material:
+    highlight: kate
+    self_contained: true
+    code_folding: show
+    thumbnails: true
+    gallery: true
+    fig_width: 4
+    fig_height: 4
+    df_print: kable
+---
+<style>
+body {
+text-align: justify}
+</style>
+
+# 1. Introducción
+
+En el presente proyecto se pretende cumplir con los objetivos establecidos para el trabajo final de la asignatura "Business Perfomance Analysis" del máster de Big Data & Analytics de la EAE Business school.
+
+El tema elegido para completar este trabajo es el análisis de una misma noticia en cuatro periódicos diferentes; __El Mundo, El País, El Periódico y Ok Diario__. La finalidad es si se observa sesgo político en la notica, analizando para ello las palabras más frecuentes y los bigramas más frecuentes de dichas noticias.
+
+A continuación se indican los enlaces de la noticia elegida: __El juicio de Quim Torra__.
+
+[El Mundo](https://www.elmundo.es/cataluna/2019/11/18/5dd1a7ba21efa0b6248b4606.html)  
+[El País](https://elpais.com/ccaa/2019/11/18/catalunya/1574062344_940943.html)  
+[El Periódico](https://www.elperiodico.com/es/politica/20191118/declaracion-quim-torra-juicio-tsjc-desobediencia-pancarta-lazos-amarillos-7740469)  
+[Ok Diario](https://okdiario.com/espana/torra-dice-que-desobedecio-porque-junta-electoral-no-esta-encima-cataluna-4828375)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#library(knitr)
+library(rmdformats)
+library(rvest)
+library(stringr)
+library(tidytext)
+library(dplyr)
+library(ggplot2)
+library(wordcloud2)
+library(reshape2)
+library(tidyr)
+library(stopwords)
+library(htmlwidgets)
+library(kableExtra)
+library(RColorBrewer)
+#---- Recursos----
+#Palabras más recurrentes en español.
+stop_words_esp <- stopwords(language = "es", source = "stopwords-iso")
+stop_words_esp <- as.data.frame(stop_words_esp)
+colnames(stop_words_esp) <- "text"
+stop_words_esp$text <- as.character(stop_words_esp$text)
+
+#Generamos una paleta de colores específica para el número de palabras a representar
+colores_azules <- colorRampPalette(brewer.pal(9,"Blues"))
+colores_rojos <- colorRampPalette(brewer.pal(9,"Reds"))
+colores_naranjas <- colorRampPalette(brewer.pal(9,"Oranges"))
+colores_verdes <- colorRampPalette(brewer.pal(9,"Greens"))
+
+#---- Web scrapping----
+
+# URL con la misma noticia seleccionada.
+el_pais_url <- "https://elpais.com/ccaa/2019/11/18/catalunya/1574062344_940943.html"
+el_mundo_url <- "https://www.elmundo.es/cataluna/2019/11/18/5dd1a7ba21efa0b6248b4606.html"
+ok_diario_url <- "https://okdiario.com/espana/torra-dice-que-desobedecio-porque-junta-electoral-no-esta-encima-cataluna-4828375"
+el_periodico_url <- "https://www.elperiodico.com/es/politica/20191118/declaracion-quim-torra-juicio-tsjc-desobediencia-pancarta-lazos-amarillos-7740469"
+
+# Accedemos a los elementos que me interesan. En este caso los contenidos de los párrafos.
+# 1- El Mundo.
+tmp <- read_html(el_mundo_url)
+tmp <- html_nodes(tmp, "article")
+tmp <- repair_encoding(html_text(tmp[1]))
+
+# Dividimos toda la cadena de texto en bloques
+bloque_el_mundo <- substring(tmp,1516,nchar(tmp))
+bloque1_mundo <- substring(bloque_el_mundo,1,2905)
+bloque2_mundo <- substring(bloque_el_mundo,3577,nchar(bloque_el_mundo))
+bloque2_mundo <- substring(bloque2_mundo,1,(nchar(bloque2_mundo)-426))
+# y lo juntamos.
+bloque_el_mundo <- paste(bloque1_mundo," ",bloque2_mundo)
+
+# 2- Ok Diario.
+
+tmp2 <- read_html(ok_diario_url)
+tmp2 <- html_nodes(tmp2, "section")
+tmp2 <- tmp2[1]
+tmp2 <- repair_encoding(html_text(tmp2)) #reparamos todo el codigo para que sea UTF-8
+
+
+bloque_ok_diario <- substring(tmp2,930,nchar(tmp2))
+bloque_ok_diario <- substring(bloque_ok_diario,1,2209) #Conseguido! Ahora falta formatearlo.
+# 3- El Periodico.
+
+tmp3 <- read_html(el_periodico_url)
+tmp3 <- html_nodes(tmp3, "section")
+tmp3 <- tmp3[3]
+tmp3 <- html_text(tmp3)
+tmp3 <- repair_encoding(tmp3) #reparamos todo el codigo para que sea UTF-8
+
+bloque_el_periodico <- substring(tmp3,1051,nchar(tmp3))
+bloque_el_periodico_1 <- substring(bloque_el_periodico,1,695) #Conseguido! Ahora falta formatearlo.
+bloque_el_periodico_2 <- substring(bloque_el_periodico,928,nchar(bloque_el_periodico)-3514)
+bloque_el_periodico <- paste(bloque_el_periodico_1," ",bloque_el_periodico_2)
+
+# 4 - El País.
+
+tmp4 <- read_html(el_pais_url)
+tmp4 <- html_nodes(tmp4, "article")
+tmp4 <- tmp4[1]
+tmp4 <- html_text(tmp4)
+tmp4 <- repair_encoding(tmp4) #reparamos todo el codigo para que sea UTF-8
+
+bloque_el_pais <- substring(tmp4,3223,nchar(tmp4))
+bloque_el_pais_1 <- substring(bloque_el_pais,1,642)
+bloque_el_pais_2 <- substring(bloque_el_pais,953,1794)
+bloque_el_pais_3 <- substring(bloque_el_pais,3779,4714)
+bloque_el_pais_4 <- substring(bloque_el_pais,4737,5071)
+bloque_el_pais_5 <- substring(bloque_el_pais,7090,10443)
+bloque_el_pais <- paste(bloque_el_pais_1," ",bloque_el_pais_2," ",bloque_el_pais_3," ",
+                        bloque_el_pais_4," ",bloque_el_pais_5) #Conseguido! Ahora falta formatearlo.
+
+#---- FORMATEANDO----
+
+# Vamos a quitar todos los caracteres "/" empleando Gsub y expresioner regulares.
+# 1. El Mundo.
+bloque_el_mundo <- gsub("[^a-zA-ZáéíóúÁÉÍÓÚñ.,:0-9 ]","",bloque_el_mundo)
+bloque_el_mundo <- tolower(bloque_el_mundo)
+bloque_el_mundo <- gsub("  +"," ",bloque_el_mundo)
+
+
+# 2. OkDiario.
+bloque_ok_diario <- gsub(("[^a-zA-ZáéíóúÁÉÍÓÚñ.,:0-9 ]"),"",bloque_ok_diario)
+bloque_ok_diario <- tolower(bloque_ok_diario)
+
+# 3. El Periódico.
+bloque_el_periodico <- gsub("[^a-zA-ZáéíóúÁÉÍÓÚñ.,:0-9 ]","",bloque_el_periodico)
+bloque_el_periodico <- gsub("  +"," ",bloque_el_periodico)
+bloque_el_periodico <- gsub("rdquor","",bloque_el_periodico)
+bloque_el_periodico <- tolower(bloque_el_periodico)
+
+# 4. El País.
+bloque_el_pais <- gsub(("[^a-zA-ZáéíóúÁÉÍÓÚñ.,:0-9 ]"),"",bloque_el_pais)
+bloque_el_pais <- gsub("  +"," ",bloque_el_pais)
+bloque_el_pais <- tolower(bloque_el_pais)
+
+
+#---- TIDYTEXT ----
+#-- Frecuencia de palabras --
+bloques_raw <- c(el_mundo = bloque_el_mundo, el_pais = bloque_el_pais, 
+             ok_diario = bloque_ok_diario, el_periodico = bloque_el_periodico)
+
+bloques_df <- tibble(line = 1:4 , text = bloques_raw) %>%
+                unnest_tokens(word, text) %>%
+                as.data.frame()
+
+bloques_df <-anti_join(bloques_df,stop_words_esp, by = c("word"="text"))
+
+bloques_df[bloques_df$line == 1,1] <- "el_mundo"
+bloques_df[bloques_df$line == 2,1] <- "el_pais"
+bloques_df[bloques_df$line == 3,1] <- "ok_diario"
+bloques_df[bloques_df$line == 4,1] <- "el_periodico"
+
+bloques_count <- bloques_df %>%
+  count(line, word, sort = T) %>%
+  as.data.frame()
+
+colnames(bloques_count) <- c("periodico","palabra","n")
+
+# filtraremos por periodico y generaremos otras tablas para aquellas palabras que se repiten
+# más de una vez.
+bloques_count_mundo <- bloques_count[bloques_count$periodico == "el_mundo",]
+bloques_count_mundo_f <- bloques_count_mundo[bloques_count_mundo$n > 1,]
+
+bloques_count_pais <- bloques_count[bloques_count$periodico == "el_pais",]
+bloques_count_pais_f <- bloques_count_pais[bloques_count_pais$n > 1,]
+
+bloques_count_okdiario <- bloques_count[bloques_count$periodico == "ok_diario",]
+bloques_count_okdiario_f <- bloques_count_okdiario[bloques_count_okdiario$n > 1,]
+
+bloques_count_periodico <- bloques_count[bloques_count$periodico == "el_periodico",]
+bloques_count_periodico_f <- bloques_count_periodico[bloques_count_periodico$n > 1,]
+
+bloques <- rbind(bloques_count_mundo_f[1:5,],bloques_count_pais_f[1:5,],
+                 bloques_count_okdiario_f[1:5,],bloques_count_periodico_f[1:5,])
+
+
+bloques2 <- rbind(bloques_count_mundo_f,bloques_count_pais_f,
+                  bloques_count_okdiario_f,bloques_count_periodico_f)
+
+
+
+#-- Bigramas --
+# Empleando las funciones de TidyText es muy sencillo llevar esto a cabo
+
+bloques_bigrams_df <- tibble(line = 1:4 , text = bloques_raw) %>%
+  unnest_tokens(bigram, text, token = "ngrams", n=2) %>%
+  as.data.frame()
+
+bloques_bigrams_df[bloques_bigrams_df$line == 1,1] <- "el_mundo"
+bloques_bigrams_df[bloques_bigrams_df$line == 2,1] <- "el_pais"
+bloques_bigrams_df[bloques_bigrams_df$line == 3,1] <- "ok_diario"
+bloques_bigrams_df[bloques_bigrams_df$line == 4,1] <- "el_periodico"
+
+bigrams_separated <- bloques_bigrams_df %>%
+  separate(bigram, c("word1", "word2"), sep = " ")
+
+# Quitamos palabras más comunes en español
+bigrams_filtered <- bigrams_separated %>%
+  filter(!word1 %in% stop_words_esp$text) %>%
+  filter(!word2 %in% stop_words_esp$text)
+
+bigram_counts <- bigrams_filtered %>% 
+  count(word1, word2, sort = TRUE)
+
+bigrams_united <- bigrams_filtered %>%
+  unite(bigram, word1, word2, sep = " ")
+
+bigram_counts <- bigrams_united %>%
+  count(line, bigram, sort = T) %>%
+  as.data.frame()
+
+# Filtro para bigramas más recurrentes
+bigram_counts <- bigram_counts[bigram_counts$n > 1,]
+
+# -- Palabras únicas --
+# Empleamos la función DCAST y obtenemos las "máscaras" (filtros booleanos) para filtrar por
+# palabras únicas.
+bloques_count_dcast <- dcast(bloques2, palabra ~ periodico, fun.aggregate = sum)
+
+unicas_mundo <- bloques_count_dcast$el_mundo != 0 & bloques_count_dcast$el_pais == 0 &
+            bloques_count_dcast$el_periodico == 0 & bloques_count_dcast$ok_diario == 0
+
+unicas_pais <- bloques_count_dcast$el_mundo == 0 & bloques_count_dcast$el_pais != 0 &
+            bloques_count_dcast$el_periodico == 0 & bloques_count_dcast$ok_diario == 0
+
+unicas_okdiario <- bloques_count_dcast$el_mundo == 0 & bloques_count_dcast$el_pais == 0 &
+                bloques_count_dcast$el_periodico == 0 & bloques_count_dcast$ok_diario != 0
+unicas_periodico <- bloques_count_dcast$el_mundo == 0 & bloques_count_dcast$el_pais == 0 &
+                bloques_count_dcast$el_periodico != 0 & bloques_count_dcast$ok_diario == 0
+
+ 
+tabla_unicas_mundo <- bloques_count_dcast[unicas_mundo,]
+tabla_unicas_pais <- bloques_count_dcast[unicas_pais,]
+tabla_unicas_okdiario <- bloques_count_dcast[unicas_okdiario,]
+tabla_unicas_periodico <- bloques_count_dcast[unicas_periodico,]
+
+```
+
+# 2. Análisis de palabras más frecuentes
+
+A la hora de explorar un texto siempre es interesante recurrir a mostrar las palabras más frecuentes. Esta exploración nos da una idea de los conceptos más recurrentes por el/la autor/a del texto en cuestión.
+
+Sin previa información, podríamos concluir que las palabras más recurrentes van a ser los pronombres, conjunciones, determinantes y demás recursos gramaticales. Dado que estas palabras realmente no aportan información a nuestro estudio, se ha empleado un filtro de las palabras más usadas en español, empleando para ello la libreria `stopwords` que no es más que una colección de las palabras más recurrentes en el idioma español.
+
+Una vez se ha hecho esto, se ha vuelto a filtrar por aquellas palabras que se repiten dos veces o más. Normalmente el filtro en _text mining_ suele ser superior, pero dado que nuestro objeto de estudio se trata de noticias cortas (menos de 500 palabras), se ha fijado que una palabra es recurrente cuando aparece __dos o más veces__.
+
+En el siguiente gráfico se muestra en un diagrama de barras las palabras más empleadas, agrupadas por periódico:
+
+
+```{r fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
+#Facet palabras más repetidas por diario
+fito <- list(colores_azules(9))
+ggplot(bloques, aes(x = reorder_within(palabra, -n, periodico), y = n)) +
+  geom_bar(stat ="identity", aes(fill = periodico, alpha = n) , size = 5) +
+  scale_x_reordered() +
+  scale_fill_manual("periodico", 
+        values = c("el_mundo" = list(colores_azules(9))[[1]][9],
+                    "el_pais" = list(colores_rojos(9))[[1]][9],
+                    "el_periodico" = list(colores_naranjas(9))[[1]][9],
+                    "ok_diario" = list(colores_verdes(9))[[1]][9])) +
+  labs(title = "Palabras más repetidas", x = "Palabra", y = "Recuento", 
+       subtitle = "Agrupadas por periódico") +
+  scale_y_continuous(breaks = seq(0,15,2))+
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
+        title = element_text(size = 15, lineheight = 1),
+        plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 10 )
+  )+
+  facet_grid(~periodico, scales = "free_x", space = "free")
+```
+
+Como podemos observar, muchas de las palabras que más se repiten coinciden en los cuatro diarios, siendo las más destacadas _"torra", "orden", "electoral", "generalitat"_ y _"presidente"_. Por otra parte, es interesante que en el periódico "El País" nombren al abogado del Sr. Torra, el Sr. Boye mientras que en los demás diarios no lo han nombrado.
+
+
+# 3. Bigramas más repetidos
+
+Una vez vistas las palabras más recurrentes, es también interesante realizar un análisis de bigramas. Nuevamente se han filtrado las palabras de las noticias quitando aquellos recursos gramaticales repetitivos y aquellos bigramas que aparecen una sola vez. Como los textos no son muy largos, son pocos los bigramas que cumplen estas condiciones, por lo que se ha decidido mostrar todos:
+
+```{r fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
+ggplot(bigram_counts, aes(x = reorder_within(bigram, -n, line), y = n)) +
+  geom_bar(stat ="identity", aes(fill = line, alpha = n)) +
+  scale_x_reordered() +
+  scale_fill_manual("periodico", values = c("el_mundo" = list(colores_azules(9))[[1]][9],
+                    "el_pais" = list(colores_rojos(9))[[1]][9],
+                    "el_periodico" = list(colores_naranjas(9))[[1]][9],
+                    "ok_diario" = list(colores_verdes(9))[[1]][9])) +
+  labs(title = "Bigramas más repetidos.", x = "Bigrama", y = "Recuento", 
+       subtitle = "Agrupados por periódico.") +
+  scale_y_continuous(breaks = seq(0,15,2)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
+        title = element_text(size = 15, lineheight = 1),
+        plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 10 )
+  )+
+  facet_grid(~line, scales = "free_x", space = "free")
+```
+
+Nuevamente vemos muy poca diferencia entre los diferentes periódicos, siendo los más frecuentes, como no cabia esperar, _"Quim Torra","Lazos Amarillos","Junta electoral"_ y _"electoral central"_ que tienen que ver directamente con el asunto tratado en las noticias.
+
+# 4. Nubes de palabras
+
+Una forma muy visual de ver la frecuencia con la que aparecen todas las palabras de un texto es una nube de palabras. Para ello se ha empleado la librería `wordcloud2`.
+
+## Gráficos de nubes de palabras {.tabset .tabset-fade}
+
+### El Mundo
+```{r my_wordclouds, fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
+
+#webshot::install_phantomjs()
+
+#Generamos una paleta de colores específica para el número de palabras a representar
+colores_azules <- colorRampPalette(brewer.pal(9,"Blues"))
+
+hw = wordcloud2(bloques_count_mundo[,2:3],color=rev(colores_azules(nrow(bloques_count_mundo))))       
+saveWidget(hw,"1.html",selfcontained = F)
+webshot::webshot("1.html","1.png",vwidth = 1800, vheight = 900, delay =10)
+
+```
+
+### El País
+```{r my_wordclouds2, fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
+colores_rojos <- colorRampPalette(brewer.pal(9,"Reds"))
+
+hw2 = wordcloud2(bloques_count_pais[,2:3],color=rev(colores_rojos(nrow(bloques_count_pais))))
+saveWidget(hw2,"1.html",selfcontained = F)
+webshot::webshot("1.html","1.png",vwidth = 1800, vheight = 900, delay =10)
+
+```
+
+### El Periódico
+```{r my_wordclouds4, fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
+colores_narojo <- colorRampPalette(brewer.pal(9,"Oranges"))
+
+hw4 = wordcloud2(bloques_count_periodico[,2:3], color = rev(colores_narojo(nrow(bloques_count_periodico))))
+saveWidget(hw4,"1.html",selfcontained = F)
+webshot::webshot("1.html","1.png",vwidth = 1800, vheight = 900, delay =10)
+
+```
+
+### Ok Diario
+```{r my_wordclouds3, fig.height=4, fig.width=8, fig.align="center", echo=FALSE}
+colores_verzul <- colorRampPalette(brewer.pal(9,"Greens"))
+
+hw3 = wordcloud2(bloques_count_okdiario[,2:3], color = rev(colores_verzul(nrow(bloques_count_okdiario))))
+saveWidget(hw3,"1.html",selfcontained = F)
+webshot::webshot("1.html","1.png",vwidth = 1800, vheight = 900, delay =10)
+
+```
+
+##
+
+
+
+Como podemos observar, tanto _"El Mundo"_ como _"El País"_ tienen mucha más variedad de palabras que los diarios "El _"Periódico"_ y _"Ok Diario"_. De hecho, revisando un poco más, podemos observar el número de palabras relevantes de cada noticia:
+
+* El Mundo: 330 palabras relevantes.  
+* El País: 327 palabras relevantes.  
+* El Periódico: 239 palabras relevantes.  
+* Ok diario: 120 palabras relevantes.
+
+Con esta información podemos concluir que tienen mayor variedad de palabras y que además tienen una longitud de noticia mayor.
+
+En cuanto al sesgo, hay particularidades relevantes:
+
+* _Ok Diario_ tiene unas cuantas palabras interesantes con cierta recurrencia. Las más interesantes son "franquista" y "vox", que podría indicar un cierto sesgo hacia el lado más duro de la derecha.
+
+* _El Periódico_ es de los pocos diarios que ha empleado más palabras en catalán. 
+
+* _El País_ también emplea "franquista" varias veces, aunque con menos recurrencia relativa que Ok Diario.
+
+* _El Mundo_ usa "vox" aunque también con menos recurrencia.
+
+Por lo tanto, seguimos sin ver un sesgo político claro, aunque hay ligeros detalles que nos indican que Ok Diario está más sesgado a la derecha (qué sorpresa).
+
+
+
+# 5. Palabras únicas por periódico
+
+Otro punto de perspectiva interesante es revisar qué palabras aparecen en algunos periódicos que no aparecen en los demás. En caso de aparecer palabras relacionadas con inclinaciones políticas, podríamos tener un indicador de sesgo político.
+
+A continuación se muestran aquellas palabras más repetidas
+
+## Tablas palabras únicas {.tabset .tabset-fade}
+### El Mundo
+
+```{r my_tables, echo=FALSE}
+tabla_unicas_mundo %>%
+  mutate_if(is.numeric, function(x) {
+    cell_spec(x, bold = T, 
+              color = spec_color(x, end = 0.5,option = "C"),
+              font_size = spec_font_size(x))
+  }) %>%
+    mutate(Palabra = cell_spec(
+    palabra , color = "white", bold = T,
+    background = spec_color(1:nrow(tabla_unicas_mundo), end = 0.9, option = "A", direction = -1)
+  )) %>%
+  select(2:6) %>%
+  kable(escape = F, align = "c",col.names = c("El Mundo", "El País", "El Periódico", "Ok Diario", "Palabras")) %>%
+  kable_styling(c("striped", "condensed"), full_width = F)
+
+```
+
+
+### El País
+
+```{r my_tables2, echo=FALSE}
+tabla_unicas_pais %>%
+  mutate_if(is.numeric, function(x) {
+    cell_spec(x, bold = T, 
+              color = spec_color(x, end = 0.5,option = "C"),
+              font_size = spec_font_size(x))
+  }) %>%
+    mutate(Palabra = cell_spec(
+    palabra , color = "white", bold = T,
+    background = spec_color(1:nrow(tabla_unicas_pais), end = 0.9, option = "A", direction = -1)
+  )) %>%
+  select(2:6) %>%
+  kable(escape = F, align = "c",col.names = c("El Mundo", "El País", "El Periódico", "Ok Diario", "Palabras")) %>%
+  kable_styling(c("striped", "condensed"), full_width = F)
+
+```
+
+### El Periódico
+
+```{r my_tables3, echo=FALSE}
+tabla_unicas_periodico %>%
+  mutate_if(is.numeric, function(x) {
+    cell_spec(x, bold = T, 
+              color = spec_color(x, end = 0.5,option = "C"),
+              font_size = spec_font_size(x))
+  }) %>%
+    mutate(Palabra = cell_spec(
+    palabra , color = "white", bold = T,
+    background = spec_color(1:nrow(tabla_unicas_periodico), end = 0.9, option = "A", direction = -1)
+  )) %>%
+  select(2:6) %>%
+  kable(escape = F, align = "c",col.names = c("El Mundo", "El País", "El Periódico", "Ok Diario", "Palabras")) %>%
+  kable_styling(c("striped", "condensed"), full_width = F)
+
+```
+
+
+### Ok Diario
+
+```{r my_tables4, echo=FALSE}
+tabla_unicas_okdiario %>%
+  mutate_if(is.numeric, function(x) {
+    cell_spec(x, bold = T, 
+              color = spec_color(x, end = 0.5,option = "C"),
+              font_size = spec_font_size(x))
+  }) %>%
+    mutate(Palabra = cell_spec(
+    palabra , color = "white", bold = T,
+    background = spec_color(1:nrow(tabla_unicas_okdiario), end = 0.9, option = "A", direction = -1)
+  )) %>%
+  select(2:6) %>%
+  kable(escape = F, align = "c",col.names = c("El Mundo", "El País", "El Periódico", "Ok Diario", "Palabras")) %>%
+  kable_styling(c("striped", "condensed"), full_width = F)
+
+```
+
+
+##
+
+¿Qué conclusiones podemos sacar de estas tablas?
+
+*El diario _El Mundo_ no tiene palabras únicas relevantes que nos indiquen algún indicio de sesgo. Al tener un gran número de palabras, vuelve a constatar la diversidad de palabras a lo largo de toda la noticia.
+
+* _El País_ tampoco tiene nada destacable. Son los únicos en nombrar a "Boye", el abogado de Quim Torra y Carles Puigdemont y de ahí que aparezcan otras palabras relacionadas con el segundo ("expresident","puigdemont"). Dato curioso, son los únicos en usar la palabra "independentistas".
+
+* _El Periódico_ al igual que El País usó a "Boye", El periódico emplea a "Bañeras" para nombrar a Francisco Bañeras, fiscal superior de Cataluña Además nombran las esteladas y usan la palabra "catalunya", que como ya vimos han usado las palabras más repetidas.
+
+* _Ok Diario_ nada que decir. Pocas palabras y sin relevancia. Nos confirma que la diversidad de palabras de esta noticia es escasa.
+
+# 6. Conclusiones
+
+Mi hipótesis inicial era que __sí había sesgo político__, pero tras los datos expuestos creo que no podemos ni confirmarla, ni desmentirla. 
+
+Los posibles motivos de que no se vea un sesgo tan claro puede deberse a que se trata de una __noticia informativa__ y no de un editorial o artículo de opinión, y también que los textos seleccionados son cortos. En textos más largos es más factible ver una temática o características más fácil. O que simplemente no haya sesgo político _(deja que lo dude)_.
+
+
+# 7. Anexos
+
+Como parte del contenido del presente trabajo se ha solicitado que seleccionemos dos páginas web de expresiones regulares y otras dos de RMarkdown. El objetivo es comentar dichas páginas de cual es mejor para qué fin buscado, pros y contras de cada página, etc.
+
+## 7.1. Expresiones regulares
+
+Las expresiones regulares son una herramienta muy empleada a la hora de realizar limpieza de datos. Nos permiten seleccionar caracteres de muchas formas para poder adaptarlas a las necesidades de nuestros proyectos. Su sintaxis es muy específica y es común para todos los lenguajes de programación (o muy similar). En el presente trabajo se usó esta herramienta para poder formatear las noticias seleccionadas.
+
+
+## Páginas "Regex" {.tabset .tabset-fade}
+
+### Cheatsheet de expresiones regulares
+
+[Cheat Sheet](https://rstudio.com/wp-content/uploads/2016/09/RegExCheatsheet.pdf)  
+
+Sin duda alguna, es el documento por antonomasía de la gente olvidadiza (yo mismo). Se trata un PDF descargable que permite explorar todas las opciones de uso que tienen las expresiones regulares, de una forma muy visual y siendo breve y conciso.
+
+Es un gran documento que tener al lado para hacer tus limpiezas de datos.
+
+
+### Regular-expressions.info
+
+[Regular-expressions.info](https://www.regular-expressions.info/tutorial.html)
+
+Aunque su apariencia es horriblemente anticuada, el contenido de la misma es espectacular. Muchísima información bien estructurada. Sin duda alguna está más orientada a students pero creo que también sería una buena fuente de informacion para gente más experta.
+
+##
+
+## 7.2. RMarkdown
+
+Los RMarkdown nos permiten pasar del entorno de trabajo a un entorno de visualización para difundirlo. Tiene miles de herramientas que pueden conseguir cualquier nivel de personalización.
+
+## Páginas RMarkdown {.tabset .tabset-fade}
+
+### RMarkdown Studio
+
+[RMarkdown.restudio](https://rmarkdown.rstudio.com/articles_intro.html)  
+
+Siempre hay que tener apreciación a aquella información que viene desde la mismísima fuente. En nuestro caso, esta página explica paso a paso y bien masticado todos los pasos a hacer para empezar a trabajar con RMarkdown. Muy útil al principio, después pierde peso.
+
+
+### Regular-expressions.info
+
+[RMarkdown for Data Science](https://r4ds.had.co.nz/r-markdown.html#r-markdown)
+
+Esta página web es MUY recomendable. A parte de todo el contenido que tiene y la estructuración del mismo, esta muy orientado a estudiantes. No se profundiza en  gran medida en los temas pero se presenta en un formato sencillo y asequible indeferentemente del nivel de conociemiento de programación que tenga el lector.
+
+##
+
+
