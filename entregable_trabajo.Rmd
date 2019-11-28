@@ -537,7 +537,7 @@ tabla_unicas_okdiario %>%
 
 * _El País_ tampoco tiene nada destacable. Son los únicos en nombrar a "Boye", el abogado de Quim Torra y Carles Puigdemont y de ahí que aparezcan otras palabras relacionadas con el segundo ("expresident","puigdemont"). Dato curioso, son los únicos en usar la palabra "independentistas".
 
-* _El Periódico_ al igual que El País usó a "Boye", El periódico emplea a "Bañeras" para nombrar a Francisco Bañeras, fiscal superior de Cataluña Además nombran las esteladas y usan la palabra "catalunya", que como ya vimos han usado las palabras más repetidas.
+* _El Periódico_ al igual que El País usó a "Boye", El periódico emplea a "Bañeras" para nombrar a Francisco Bañeras, fiscal superior de Cataluña. Además nombran esteladas y usan la palabra "catalunya" que, como ya vimos en palabras más repetidas, son el periódico que más palabras en catalán ha empleado.
 
 * _Ok Diario_ nada que decir. Pocas palabras y sin relevancia. Nos confirma que la diversidad de palabras de esta noticia es escasa.
 
@@ -624,7 +624,7 @@ Siempre hay que tener apreciación a aquella información que viene desde la mis
 
 [RMarkdown for Data Science](https://r4ds.had.co.nz/r-markdown.html#r-markdown)
 
-Esta página web es MUY recomendable. A parte de todo el contenido que tiene y la estructuración del mismo, esta muy orientado a estudiantes. No se profundiza en  gran medida en los temas pero se presenta en un formato sencillo y asequible indeferentemente del nivel de conociemiento de programación que tenga el lector.
+Esta página web es MUY recomendable. A parte de todo el contenido que tiene y la estructuración del mismo, esta muy orientado a estudiantes. No se profundiza en  gran medida en los temas pero se presenta en un formato sencillo y asequible indiferentemente del nivel de conociemiento de programación que tenga el lector.
 
 ##
 
