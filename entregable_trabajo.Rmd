@@ -17,7 +17,7 @@ output:
 body {
 text-align: justify}
 </style>
-https://github.com/Antonidas21/Trabajo_final_R.git
+
 # 1. Introducción
 
 En el presente proyecto se pretende cumplir con los objetivos establecidos para el trabajo final de la asignatura "Business Perfomance Analysis" del máster de Big Data & Analytics de la EAE Business school.
@@ -249,6 +249,22 @@ tabla_unicas_periodico <- bloques_count_dcast[unicas_periodico,]
 
 ```
 
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by <a href="https://github.com/Antonidas21">Antonio Álvarez Bao</a></p>
+<p style="text-align: center;"><span style="color: #638;"><em>anton.lpgc.alvarez@gmail.com</em></span></p>
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+    <a href="https://www.linkedin.com/in/antonbao/" class="fa fa-linkedin"></a>
+    <a href="https://github.com/Antonidas21" class="fa fa-github"></a>
+</p>
+
+&nbsp;
+
 # 2. Análisis de palabras más frecuentes
 
 A la hora de explorar un texto siempre es interesante recurrir a mostrar las palabras más frecuentes. Esta exploración nos da una idea de los conceptos más recurrentes por el/la autor/a del texto en cuestión.
@@ -285,6 +301,21 @@ ggplot(bloques, aes(x = reorder_within(palabra, -n, periodico), y = n)) +
 
 Como podemos observar, muchas de las palabras que más se repiten coinciden en los cuatro diarios, siendo las más destacadas _"torra", "orden", "electoral", "generalitat"_ y _"presidente"_. Por otra parte, es interesante que en el periódico "El País" nombren al abogado del Sr. Torra, el Sr. Boye mientras que en los demás diarios no lo han nombrado.
 
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by <a href="https://github.com/Antonidas21">Antonio Álvarez Bao</a></p>
+<p style="text-align: center;"><span style="color: #638;"><em>anton.lpgc.alvarez@gmail.com</em></span></p>
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+    <a href="https://www.linkedin.com/in/antonbao/" class="fa fa-linkedin"></a>
+    <a href="https://github.com/Antonidas21" class="fa fa-github"></a>
+</p>
+
+&nbsp;
 
 # 3. Bigramas más repetidos
 
@@ -311,6 +342,22 @@ ggplot(bigram_counts, aes(x = reorder_within(bigram, -n, line), y = n)) +
 ```
 
 Nuevamente vemos muy poca diferencia entre los diferentes periódicos, siendo los más frecuentes, como no cabia esperar, _"Quim Torra","Lazos Amarillos","Junta electoral"_ y _"electoral central"_ que tienen que ver directamente con el asunto tratado en las noticias.
+
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by <a href="https://github.com/Antonidas21">Antonio Álvarez Bao</a></p>
+<p style="text-align: center;"><span style="color: #638;"><em>anton.lpgc.alvarez@gmail.com</em></span></p>
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+    <a href="https://www.linkedin.com/in/antonbao/" class="fa fa-linkedin"></a>
+    <a href="https://github.com/Antonidas21" class="fa fa-github"></a>
+</p>
+
+&nbsp;
 
 # 4. Nubes de palabras
 
@@ -387,7 +434,21 @@ En cuanto al sesgo, hay particularidades relevantes:
 
 Por lo tanto, seguimos sin ver un sesgo político claro, aunque hay ligeros detalles que nos indican que Ok Diario está más sesgado a la derecha (qué sorpresa).
 
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by <a href="https://github.com/Antonidas21">Antonio Álvarez Bao</a></p>
+<p style="text-align: center;"><span style="color: #638;"><em>anton.lpgc.alvarez@gmail.com</em></span></p>
 
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+    <a href="https://www.linkedin.com/in/antonbao/" class="fa fa-linkedin"></a>
+    <a href="https://github.com/Antonidas21" class="fa fa-github"></a>
+</p>
+
+&nbsp;
 
 # 5. Palabras únicas por periódico
 
@@ -487,12 +548,43 @@ tabla_unicas_okdiario %>%
 
 * _Ok Diario_ nada que decir. Pocas palabras y sin relevancia. Nos confirma que la diversidad de palabras de esta noticia es escasa.
 
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by <a href="https://github.com/Antonidas21">Antonio Álvarez Bao</a></p>
+<p style="text-align: center;"><span style="color: #638;"><em>anton.lpgc.alvarez@gmail.com</em></span></p>
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+    <a href="https://www.linkedin.com/in/antonbao/" class="fa fa-linkedin"></a>
+    <a href="https://github.com/Antonidas21" class="fa fa-github"></a>
+</p>
+
+&nbsp;
+
 # 6. Conclusiones
 
 Mi hipótesis inicial era que __sí había sesgo político__, pero tras los datos expuestos creo que no podemos ni confirmarla, ni desmentirla. 
 
 Los posibles motivos de que no se vea un sesgo tan claro puede deberse a que se trata de una __noticia informativa__ y no de un editorial o artículo de opinión, y también que los textos seleccionados son cortos. En textos más largos es más factible ver una temática o características más fácil. O que simplemente no haya sesgo político _(deja que lo dude)_.
 
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by <a href="https://github.com/Antonidas21">Antonio Álvarez Bao</a></p>
+<p style="text-align: center;"><span style="color: #638;"><em>anton.lpgc.alvarez@gmail.com</em></span></p>
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+    <a href="https://www.linkedin.com/in/antonbao/" class="fa fa-linkedin"></a>
+    <a href="https://github.com/Antonidas21" class="fa fa-github"></a>
+</p>
+
+&nbsp;
 
 # 7. Anexos
 
@@ -543,4 +635,19 @@ Esta página web es MUY recomendable. A parte de todo el contenido que tiene y l
 
 ##
 
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by <a href="https://github.com/Antonidas21">Antonio Álvarez Bao</a></p>
+<p style="text-align: center;"><span style="color: #638;"><em>anton.lpgc.alvarez@gmail.com</em></span></p>
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+    <a href="https://www.linkedin.com/in/antonbao/" class="fa fa-linkedin"></a>
+    <a href="https://github.com/Antonidas21" class="fa fa-github"></a>
+</p>
+
+&nbsp;
 
