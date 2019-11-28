@@ -17,7 +17,7 @@ output:
 body {
 text-align: justify}
 </style>
-
+https://github.com/Antonidas21/Trabajo_final_R.git
 # 1. Introducción
 
 En el presente proyecto se pretende cumplir con los objetivos establecidos para el trabajo final de la asignatura "Business Perfomance Analysis" del máster de Big Data & Analytics de la EAE Business school.
@@ -479,7 +479,7 @@ tabla_unicas_okdiario %>%
 
 ¿Qué conclusiones podemos sacar de estas tablas?
 
-*El diario _El Mundo_ no tiene palabras únicas relevantes que nos indiquen algún indicio de sesgo. Al tener un gran número de palabras, vuelve a constatar la diversidad de palabras a lo largo de toda la noticia.
+* El diario _El Mundo_ no tiene palabras únicas relevantes que nos indiquen algún indicio de sesgo. Al tener un gran número de palabras, vuelve a constatar la diversidad de palabras a lo largo de toda la noticia.
 
 * _El País_ tampoco tiene nada destacable. Son los únicos en nombrar a "Boye", el abogado de Quim Torra y Carles Puigdemont y de ahí que aparezcan otras palabras relacionadas con el segundo ("expresident","puigdemont"). Dato curioso, son los únicos en usar la palabra "independentistas".
 
