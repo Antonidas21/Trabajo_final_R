@@ -25,7 +25,7 @@ packages <- c("rmdformats",
 "kableExtra",
 "RColorBrewer")
 
-lapply(packages, install.packages, character.only = T)
+install.packages(packages)
 
 ```
 ## Cómo colaborar o realizar consultas
