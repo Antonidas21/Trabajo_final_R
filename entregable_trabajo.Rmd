@@ -620,7 +620,7 @@ Los RMarkdown nos permiten pasar del entorno de trabajo a un entorno de visualiz
 Siempre hay que tener apreciación a aquella información que viene desde la mismísima fuente. En nuestro caso, esta página explica paso a paso y bien masticado todos los pasos a hacer para empezar a trabajar con RMarkdown. Muy útil al principio, después pierde peso.
 
 
-### Regular-expressions.info
+### RMarkdown for Data Science
 
 [RMarkdown for Data Science](https://r4ds.had.co.nz/r-markdown.html#r-markdown)
 
